@@ -85,56 +85,12 @@ void logFunctionCallback(sl::LogType type, const char* msg) {
     }
 }
 
-static const std::map< const sl::Result, const std::string> errors = {
-        {sl::Result::eErrorIO,"eErrorIO"},
-        {sl::Result::eErrorDriverOutOfDate,"eErrorDriverOutOfDate"},
-        {sl::Result::eErrorOSOutOfDate,"eErrorOSOutOfDate"},
-        {sl::Result::eErrorOSDisabledHWS,"eErrorOSDisabledHWS"},
-        {sl::Result::eErrorDeviceNotCreated,"eErrorDeviceNotCreated"},
-        {sl::Result::eErrorAdapterNotSupported,"eErrorAdapterNotSupported"},
-        {sl::Result::eErrorNoPlugins,"eErrorNoPlugins"},
-        {sl::Result::eErrorVulkanAPI,"eErrorVulkanAPI"},
-        {sl::Result::eErrorDXGIAPI,"eErrorDXGIAPI"},
-        {sl::Result::eErrorD3DAPI,"eErrorD3DAPI"},
-        {sl::Result::eErrorNRDAPI,"eErrorNRDAPI"},
-        {sl::Result::eErrorNVAPI,"eErrorNVAPI"},
-        {sl::Result::eErrorReflexAPI,"eErrorReflexAPI"},
-        {sl::Result::eErrorNGXFailed,"eErrorNGXFailed"},
-        {sl::Result::eErrorJSONParsing,"eErrorJSONParsing"},
-        {sl::Result::eErrorMissingProxy,"eErrorMissingProxy"},
-        {sl::Result::eErrorMissingResourceState,"eErrorMissingResourceState"},
-        {sl::Result::eErrorInvalidIntegration,"eErrorInvalidIntegration"},
-        {sl::Result::eErrorMissingInputParameter,"eErrorMissingInputParameter"},
-        {sl::Result::eErrorNotInitialized,"eErrorNotInitialized"},
-        {sl::Result::eErrorComputeFailed,"eErrorComputeFailed"},
-        {sl::Result::eErrorInitNotCalled,"eErrorInitNotCalled"},
-        {sl::Result::eErrorExceptionHandler,"eErrorExceptionHandler"},
-        {sl::Result::eErrorInvalidParameter,"eErrorInvalidParameter"},
-        {sl::Result::eErrorMissingConstants,"eErrorMissingConstants"},
-        {sl::Result::eErrorDuplicatedConstants,"eErrorDuplicatedConstants"},
-        {sl::Result::eErrorMissingOrInvalidAPI,"eErrorMissingOrInvalidAPI"},
-        {sl::Result::eErrorCommonConstantsMissing,"eErrorCommonConstantsMissing"},
-        {sl::Result::eErrorUnsupportedInterface,"eErrorUnsupportedInterface"},
-        {sl::Result::eErrorFeatureMissing,"eErrorFeatureMissing"},
-        {sl::Result::eErrorFeatureNotSupported,"eErrorFeatureNotSupported"},
-        {sl::Result::eErrorFeatureMissingHooks,"eErrorFeatureMissingHooks"},
-        {sl::Result::eErrorFeatureFailedToLoad,"eErrorFeatureFailedToLoad"},
-        {sl::Result::eErrorFeatureWrongPriority,"eErrorFeatureWrongPriority"},
-        {sl::Result::eErrorFeatureMissingDependency,"eErrorFeatureMissingDependency"},
-        {sl::Result::eErrorFeatureManagerInvalidState,"eErrorFeatureManagerInvalidState"},
-        {sl::Result::eErrorInvalidState,"eErrorInvalidState"},
-        {sl::Result::eWarnOutOfVRAM,"eWarnOutOfVRAM"} };
-
 bool successCheck(sl::Result result, char* location) {
 
     if (result == sl::Result::eOk)
         return true;
 
-    auto a = errors.find(result);
-    if (a != errors.end())
-        logFunctionCallback(sl::LogType::eError, ("Error: " + a->second + (location == nullptr ? "" : (" encountered in " + std::string(location)))).c_str());
-    else
-        logFunctionCallback(sl::LogType::eError, ("Unknown error " + static_cast<int>(result) + (location == nullptr ? "" : (" encountered in " + std::string(location)))).c_str());
+    logFunctionCallback(sl::LogType::eError, (std::string("Error: ") + sl::getResultAsStr(result) + (location == nullptr ? "" : (" encountered in " + std::string(location)))).c_str());
     
     return false;
 

@@ -88,6 +88,20 @@ bool DeviceManagerOverride_DX11::CreateDevice()
     return success;
 }
 
+bool DeviceManagerOverride_DX11::CreateSwapChain()
+{
+    const bool success = DeviceManager_DX11::CreateSwapChain();
+    if (success)
+    {
+        const HRESULT hr = m_DxgiFactory->MakeWindowAssociation(m_hWnd, DXGI_MWA_NO_ALT_ENTER);
+        if (FAILED(hr))
+        {
+            donut::log::warning("Failed to disable DXGI's automatic Alt+Enter handling after swap chain creation, error code = 0x%08x", hr);
+        }
+    }
+    return success;
+}
+
 bool DeviceManagerOverride_DX11::BeginFrame()
 {
     // Unimplemented: Latewarp integration for DX11

@@ -43,6 +43,7 @@ public:
 
 private:
     bool CreateDevice() final;
+    bool CreateSwapChain() final;
     void DestroyDeviceAndSwapChain() final;
     bool BeginFrame() final;
 

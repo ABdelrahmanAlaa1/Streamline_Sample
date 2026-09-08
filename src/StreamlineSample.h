@@ -39,6 +39,8 @@
 #include "UIData.h"
 #include <random>
 #include <chrono>
+#include <functional>
+#include <utility>
 
 // From Donut
 #include <donut/core/vfs/VFS.h>
@@ -190,6 +192,9 @@ private:
 
     // RenderTargets
     std::unique_ptr<RenderTargets>                  m_RenderTargets;
+    // Invoked immediately before replacing m_RenderTargets so external cache owners
+    // can release handles to textures placed in m_RenderTargets->Heap.
+    std::function<void()>                           m_BeforeRenderTargetsRecreated;
 
     //Views
     std::shared_ptr<IView>                          m_View;
@@ -275,6 +280,10 @@ public:
     // Accessors for render resources (used by UIRenderer for DLSS-G UI Color & Alpha)
     RenderTargets* GetRenderTargets() const { return m_RenderTargets.get(); }
     const donut::engine::IView* GetView() const { return m_View.get(); }
+    void SetBeforeRenderTargetsRecreatedCallback(std::function<void()> callback)
+    {
+        m_BeforeRenderTargetsRecreated = std::move(callback);
+    }
 
     virtual bool KeyboardUpdate(int key, int scancode, int action, int mods) override;
     virtual bool MousePosUpdate(double xpos, double ypos) override;

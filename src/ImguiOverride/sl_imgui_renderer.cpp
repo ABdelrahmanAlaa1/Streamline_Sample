@@ -218,12 +218,38 @@ void SL_ImGui_Renderer::CompositeUIToBackbufferWithAlpha(
     commandList->draw(args);
 }
 
+void SL_ImGui_Renderer::InvalidateRenderTargetResources()
+{
+    // BindingCache owns binding sets whose source texture is UIColorAlpha. Since
+    // UIColorAlpha is placed in RenderTargets::Heap, that texture handle keeps the
+    // old heap alive after the app replaces its RenderTargets instance.
+    if (m_bindingCache)
+        m_bindingCache->Clear();
+
+    // Each cached MRT framebuffer owns a handle to UIAlpha from the same
+    // RenderTargets instance. Its PSO is compiled for that framebuffer description,
+    // so both must be recreated for the next instance.
+    m_compositeAlphaPso = nullptr;
+    m_compositeMrtFramebuffers.clear();
+
+    // The custom ImGui PSO is compiled for UIColorAlphaFramebuffer's description.
+    // Reset it now so the next UI draw creates one for the replacement framebuffer.
+    if (m_sl_imgui_nvrhi)
+        m_sl_imgui_nvrhi->backbufferResizing();
+}
+
 void SL_ImGui_Renderer::BackBufferResizing()
 {
     // Call base class which will call imgui_nvrhi->backbufferResizing()
     // Since imgui_nvrhi actually points to our SL_ImGui_NVRHI, this will
     // properly clear both the base PSO and our UI PSOs
     ImGui_Renderer::BackBufferResizing();
+
+    // The base hook resets ImGui resources only. The separate composite pass caches
+    // binding sets for UIColorAlpha and MRT framebuffers for the backbuffer/UIAlpha,
+    // so release those handles as part of the same resize lifecycle.
+    if (m_bindingCache)
+        m_bindingCache->Clear();
 
     // Clear our MRT composite resources
     m_compositeAlphaPso = nullptr;

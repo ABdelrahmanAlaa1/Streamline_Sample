@@ -903,7 +903,8 @@ protected:
                     const std::map<sl::DLSSDPreset, std::string> DLSSRRPresetToDropdownMap = {
                         {sl::DLSSDPreset::eDefault, "Default##RRPresets"},
                         {sl::DLSSDPreset::ePresetD, "Preset D##RRPresets"},
-                        {sl::DLSSDPreset::ePresetE, "Preset E##RRPresets"}
+                        {sl::DLSSDPreset::ePresetE, "Preset E##RRPresets"},
+                        {sl::DLSSDPreset::ePresetF, "Preset F##RRPresets"}
                     };
 
                     if (ImGui::CollapsingHeader("RR Presets")) {
@@ -1101,6 +1102,7 @@ protected:
                 m_ui.NIS_Mode = nis_mode == 1 ? sl::NISMode::eScaler : sl::NISMode::eOff;
                 ImGui::DragFloat("Sharpness", &m_ui.NIS_Sharpness, 0.05f, 0, 1);
             }
+
 
             //
             //  Additional Settings

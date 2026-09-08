@@ -82,6 +82,10 @@ namespace donut::app
             nvrhi::ITexture* uiTexture,
             nvrhi::ITexture* uiAlphaTexture);
 
+        // Drops binding sets, framebuffers, and PSOs tied to one RenderTargets
+        // generation, releasing handles to its placed UI textures.
+        void InvalidateRenderTargetResources();
+
         virtual void BackBufferResizing() override;
     };
 }

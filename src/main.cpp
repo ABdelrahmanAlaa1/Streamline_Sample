@@ -239,10 +239,26 @@ int main(int __argc, const char* const* __argv)
     deviceParams.vsyncEnabled = false;
     deviceParams.swapChainFormat = nvrhi::Format::BGRA8_UNORM;
 #ifndef NDEBUG
-    if (api != nvrhi::GraphicsAPI::VULKAN)
+    // WAR 2025/3 still needed as of Win11 build 27695:
+    // Windows Optional Feature "Graphics Tools" doesn't install on Windows for ARM, so need to disable DXDebug by default
+#if defined(_M_ARM64)
+    deviceParams.enableDebugRuntime = false;
+#else
+    bool enableDebugRuntime = true;
     {
-        deviceParams.enableDebugRuntime = true;
+    #ifdef _WIN32
+        USHORT processMachine = 0;
+        USHORT nativeMachine = 0;
+        // May have be been compiled for x64, but running on ARM64
+        // Can't use GetEnvironmentVariable("PROCESSOR_ARCHITECTURE") because under x64 emulation it returns "AMD64"
+        if (IsWow64Process2(GetCurrentProcess(), &processMachine, &nativeMachine) != 0)
+        {
+            enableDebugRuntime = nativeMachine != IMAGE_FILE_MACHINE_ARM64;
+        }    
+    #endif
     }
+    deviceParams.enableDebugRuntime = enableDebugRuntime;
+#endif // _M_ARM64
 #endif // NDEBUG
 
     std::string sceneName;
@@ -329,6 +345,17 @@ int main(int __argc, const char* const* __argv)
         std::shared_ptr<UIRenderer> gui = std::make_shared<UIRenderer>(deviceManager, pApp->getASample(), uiData);
 
         gui->Init(pApp->GetShaderFactory());
+
+        // StreamlineSample recreates RenderTargets but does not own UIRenderer,
+        // whose binding sets and MRT framebuffers retain UIColorAlpha and UIAlpha.
+        // Register the dependency where both objects are composed. A weak reference
+        // prevents the callback from extending the UI renderer's lifetime.
+        std::weak_ptr<UIRenderer> weakGui = gui;
+        pApp->getASample()->SetBeforeRenderTargetsRecreatedCallback([weakGui]()
+        {
+            if (auto renderer = weakGui.lock())
+                renderer->InvalidateRenderTargetResources();
+        });
 
         deviceManager->AddRenderPassToBack(pApp.get());
         deviceManager->AddRenderPassToBack(gui.get());

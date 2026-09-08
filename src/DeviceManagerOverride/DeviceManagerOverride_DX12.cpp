@@ -84,7 +84,7 @@ IDXGIAdapter* DeviceManagerOverride_DX12::GetAdapter()
 
 bool IsNvDeviceID(UINT id)
 {
-    return id == 0x10DE;
+    return id == 0x10DE || id == 0x4144564e;
 }
 
 // Find an adapter whose name contains the given string.

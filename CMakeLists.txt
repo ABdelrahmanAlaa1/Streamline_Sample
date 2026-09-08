@@ -80,6 +80,15 @@ else()
     message(WARNING "STREAMLINE_TARGET_ARCH defaulting to ${STREAMLINE_TARGET_ARCH}")
 endif()
 
+# If we're on x64 system and targetting non-x64 (i.e. cross-compiling) we need to execute x86/64 build of shadermake
+# because that's all Windows x64 can run.
+# Windows-on-Arm64 can run either x64 or arm64, so can set `-DSHADERMAKE_TOOL=0` to prevent this.
+if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "AMD64" AND ${STREAMLINE_TARGET_ARCH} STREQUAL "arm64" AND NOT DEFINED SHADERMAKE_TOOL)
+    message(STATUS "Enabling SHADERMAKE_TOOL to cross-compile ${STREAMLINE_TARGET_ARCH} (on ${CMAKE_SYSTEM_PROCESSOR})")
+    set(SHADERMAKE_TOOL ON)
+else()
+    message(STATUS "SHADERMAKE_TOOL=${SHADERMAKE_TOOL} to build ${STREAMLINE_TARGET_ARCH} (on ${CMAKE_SYSTEM_PROCESSOR})")
+endif()
 
 if(STREAMLINE_FEATURE_DLSS_SR)
     add_compile_definitions(STREAMLINE_FEATURE_DLSS_SR)
@@ -242,6 +251,12 @@ else()
             ${CMAKE_CURRENT_SOURCE_DIR}/nvapi/amd64/nvapi64.lib
             $<$<CONFIG:Debug>:${NGX_LIB_DIR}/x64/nvsdk_ngx_d_dbg_iterator1.lib>
             $<$<NOT:$<CONFIG:Debug>>:${NGX_LIB_DIR}/x64/nvsdk_ngx_d.lib>
+        )
+    elseif(${STREAMLINE_TARGET_ARCH} STREQUAL "arm64")
+        target_link_libraries(StreamlineSample
+            ${CMAKE_CURRENT_SOURCE_DIR}/nvapi/aarch64/nvapia64.lib
+            $<$<CONFIG:Debug>:${NGX_LIB_DIR}/arm64/nvsdk_ngx_d_dbg_iterator1.lib>
+            $<$<NOT:$<CONFIG:Debug>>:${NGX_LIB_DIR}/arm64/nvsdk_ngx_d.lib>
         )
     else()
         message(FATAL_ERROR "Unsupported platform for NGX Latewarp: ${STREAMLINE_TARGET_ARCH}")

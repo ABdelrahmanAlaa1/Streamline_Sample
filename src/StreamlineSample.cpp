@@ -1038,7 +1038,14 @@ void StreamlineSample::RenderScene(nvrhi::IFramebuffer* framebuffer)
     }
 
 #ifdef STREAMLINE_FEATURE_DLSS_RR 
-    // If we are using DLSS set its constants
+    // Reset DLSSRR vars if we stop using it
+    if (DLSSRR_Last_Mode != sl::DLSSMode::eOff && m_ui.DLSSRR_Mode == sl::DLSSMode::eOff) {
+        m_DLSSRR_Last_DisplaySize = { 0,0 };
+        NVWrapper::Get().CleanupDLSSRR(true); // Free DLSSRR resources when turning off.
+    }
+    DLSSRR_Last_Mode = m_ui.DLSSRR_Mode;
+
+    // If we are using DLSS RR, set its constants
     if (m_ui.DLSSRR_Mode != sl::DLSSMode::eOff)
     {   
 
@@ -1053,6 +1060,12 @@ void StreamlineSample::RenderScene(nvrhi::IFramebuffer* framebuffer)
         m_RayReconstructionOptions.outputHeight = m_DisplaySize.y;
         m_RayReconstructionOptions.colorBuffersHDR = sl::Boolean::eTrue;
         m_RayReconstructionOptions.normalRoughnessMode = sl::DLSSDNormalRoughnessMode::ePacked;
+
+        // Changing presets requires a restart of DLSS RR
+        if (m_ui.DLSSRRPresetsChanged())
+            NVWrapper::Get().CleanupDLSSRR(true);
+
+        m_ui.DLSSRRPresetsUpdate();
 
         NVWrapper::Get().GetDLSSRROptions(m_RayReconstructionOptions, m_RayReconstructionSettings);
         m_RenderingRectSize = {int(m_RayReconstructionSettings.optimalRenderWidth), int(m_RayReconstructionSettings.optimalRenderHeight)};
@@ -1077,6 +1090,11 @@ void StreamlineSample::RenderScene(nvrhi::IFramebuffer* framebuffer)
         if (!m_RenderTargets || IsUpdateRequired)
         {
             m_BindingCache.Clear();
+            // The UI renderer caches handles to UIColorAlpha and UIAlpha. Notify it
+            // before dropping this instance so those handles do not retain its Heap.
+            if (m_RenderTargets && m_BeforeRenderTargetsRecreated)
+                m_BeforeRenderTargetsRecreated();
+
             m_RenderTargets = nullptr;
             m_RenderTargets = std::make_unique<RenderTargets>();
             m_RenderTargets->Init(GetDevice(), renderSize, m_DisplaySize, framebuffer->getDesc().colorAttachments[0].texture->getDesc().format);

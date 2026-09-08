@@ -401,6 +401,7 @@ inline float4x4 make_sl_float4x4(donut::math::float4x4 donutF4x4)
 
 static constexpr int APP_ID = 231313132;
 
+
 // We define a few functions to help with format conversion
 inline sl::float2 make_sl_float2(donut::math::float2 donutF) { return sl::float2{donutF.x, donutF.y}; }
 inline sl::float3 make_sl_float3(donut::math::float3 donutF) { return sl::float3{donutF.x, donutF.y, donutF.z}; }
