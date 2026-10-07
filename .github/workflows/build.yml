@@ -23,6 +23,7 @@ jobs:
       - name: Build Solution
         shell: cmd
         run: |
+          if not exist _bin mkdir _bin
           cmake --build _build --config Release --parallel
 
       - name: Package Artifacts

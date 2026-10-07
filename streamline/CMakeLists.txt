@@ -140,16 +140,14 @@ target_include_directories(streamline INTERFACE ${STREAMLINE_INCLUDE_DIR})
 if (WIN32)
     add_custom_target(CopyStreamlineDLLs ALL DEPENDS ${STREAMLINE_DLLS})
     add_custom_command(TARGET CopyStreamlineDLLs
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-        COMMENT "Created Dir: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
-    add_custom_command(TARGET CopyStreamlineDLLs
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${STREAMLINE_DLLS} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-        COMMENT "Copied DLLs: ${STREAMLINE_DLLS}")
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${STREAMLINE_DLLS} "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/"
+        COMMENT "Copied DLLs")
     
     if (STREAMLINE_JSONS)
         add_custom_command(TARGET CopyStreamlineDLLs
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${STREAMLINE_JSONS} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-            COMMENT "Copied JSONs: ${STREAMLINE_JSONS}")
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${STREAMLINE_JSONS} "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/"
+            COMMENT "Copied JSONs")
     endif()
     add_dependencies(streamline CopyStreamlineDLLs)
 
