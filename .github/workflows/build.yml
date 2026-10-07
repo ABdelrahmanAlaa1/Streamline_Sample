@@ -1,0 +1,46 @@
+name: Build Streamline Sample
+
+on:
+  push:
+    branches: [ main, master, ci-build ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          lfs: true
+
+      - name: Setup Vulkan SDK
+        uses: humbletim/setup-vulkan-sdk@v1.2.0
+        with:
+          vulkan-sdk-version: 1.3.268.0
+
+      - name: Configure CMake
+        shell: cmd
+        run: |
+          cmake -B _build -S . -DUSE_SL=1 -DSTREAMLINE_FEATURE_DLSS_SR=1 -DSTREAMLINE_FEATURE_DLSS_FG=1 -DSTREAMLINE_FEATURE_REFLEX=1 -DSTREAMLINE_FEATURE_IMGUI=1 -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build Solution
+        shell: cmd
+        run: |
+          cmake --build _build --config Release --parallel
+
+      - name: Package Artifacts
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path _dist -Force
+          Copy-Item -Path _bin\* -Destination _dist -Recurse -Force
+          Copy-Item -Path media -Destination _dist\media -Recurse -Force
+          Copy-Item -Path run.bat -Destination _dist\run.bat -Force
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: StreamlineSample-Release
+          path: _dist
+          retention-days: 7
