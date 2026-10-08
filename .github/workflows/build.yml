@@ -29,8 +29,8 @@ jobs:
       - name: Package Artifacts
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Path _dist -Force
-          Copy-Item -Path _bin\* -Destination _dist -Recurse -Force
+          New-Item -ItemType Directory -Path _dist\_bin -Force
+          Copy-Item -Path _bin\* -Destination _dist\_bin -Recurse -Force
           Copy-Item -Path media -Destination _dist\media -Recurse -Force
           Copy-Item -Path run.bat -Destination _dist\run.bat -Force
 
